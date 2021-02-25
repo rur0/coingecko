@@ -1,6 +1,9 @@
 package coingecko
 
-import "sync"
+import (
+	"strings"
+	"sync"
+)
 
 // PricesCache to use globally
 var PricesCache = Prices{}
@@ -20,12 +23,12 @@ type TokenPricesCache struct {
 func (tp TokenPricesCache) GetPrice(contract string, currency string) (float64, bool) {
 	tp.RLock()
 	defer tp.RUnlock()
-	contractPrices, ok := tp.prices[contract]
+	contractPrices, ok := tp.prices[strings.ToLower(contract)]
 	if !ok {
 		return 0, false
 	}
 
-	price, ok := contractPrices[currency]
+	price, ok := contractPrices[strings.ToLower(currency)]
 	if !ok {
 		return 0, false
 	}
