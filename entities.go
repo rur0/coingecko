@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/shopspring/decimal"
+	"github.com/rur0/decimal"
 )
 
 type MarketChart struct {
@@ -38,6 +38,3 @@ func (m *timedPrice) UnmarshalJSON(data []byte) error {
 // 7906058.858537895
 // 0.7496383078861153
 // 54158413.15214113
-
-type priceCache struct {
-}

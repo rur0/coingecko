@@ -8,6 +8,9 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/rur0/decimal"
 )
 
 // TokenPrices example:
@@ -16,19 +19,27 @@ import (
 {
   "0x000...": {
     "usd": 0.01259181
+		"usd_market_cap": 100000000
   }
 }
 */
-type TokenPrices map[string]map[string]float64
+type TokenPrices map[common.Address]map[string]float64
 
 var Client = &http.Client{
 	Timeout: time.Second * 5,
 }
 
-func GetTokenPrices(contractAddrs []string, currencies []string) (TokenPrices, error) {
+func GetTokenPrices(tkAddrs []common.Address, currencies []string) (TokenPrices, error) {
 	q := url.Values{}
-	q.Add("contract_addresses", strings.Join(contractAddrs, ","))
+
+	tkAddrsStr := []string{}
+	for _, tkAddr := range tkAddrs {
+		tkAddrsStr = append(tkAddrsStr, tkAddr.String())
+	}
+
+	q.Add("contract_addresses", strings.Join(tkAddrsStr, ","))
 	q.Add("vs_currencies", strings.Join(currencies, ","))
+	q.Add("include_market_cap", "true")
 	resp, err := Client.Get("https://api.coingecko.com/api/v3/simple/token_price/ethereum?" + q.Encode())
 	if err != nil {
 		return nil, err
@@ -119,4 +130,20 @@ func GetMarketChart(coin, vsCurrency, days string) (*MarketChart, error) {
 	}
 
 	return marketChart, nil
+}
+
+type TokenStats struct {
+	CircSupply int
+	Price      float64
+}
+
+// GetTokenStats prices always against eth
+func GetTokenStats(tkAddr common.Address) {
+
+}
+
+func (ts TokenStats) Mcap() decimal.Decimal {
+	return decimal.NewFromInt(int64(ts.CircSupply)).Mul(
+		decimal.NewFromFloat(ts.Price),
+	)
 }
